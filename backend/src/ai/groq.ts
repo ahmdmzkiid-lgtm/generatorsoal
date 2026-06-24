@@ -9,9 +9,17 @@ import type {
 const GROQ_MODEL = "llama-3.3-70b-versatile";
 
 function parseGeneratedQuestions(raw: string): GeneratedQuestion[] {
-  const data = JSON.parse(raw);
+  let data = JSON.parse(raw);
+
+  // Groq response_format: "json_object" selalu return object, bukan array
+  // Cari array pertama di dalam object
   if (!Array.isArray(data)) {
-    throw new SyntaxError("Response is not a JSON array");
+    const arrayKey = Object.keys(data).find((k) => Array.isArray(data[k]));
+    if (arrayKey) {
+      data = data[arrayKey];
+    } else {
+      throw new SyntaxError("Response is not a JSON array");
+    }
   }
   return data.map((item: Record<string, unknown>, i: number) => {
     if (typeof item.question !== "string") {
@@ -89,7 +97,7 @@ Output harus bisa di-parse langsung oleh JSON.parse().`;
       customPrompt?: string;
     }
   ): Promise<GeneratedQuestion[]> {
-    const userContent = `Buatkan ${count} soal dalam format JSON array. Setiap item memiliki field: question (string), options (array of {key, value} — selalu 5 opsi A/B/C/D/E), answerKey (string), explanation (string), difficulty ("easy"|"medium"|"hard"), tags (string[]).\n\n${prompt}`;
+    const userContent = `Buatkan ${count} soal dalam format JSON. Setiap item memiliki field: question (string), options (array of {key, value} — selalu 5 opsi A/B/C/D/E), answerKey (string), explanation (string), difficulty ("easy"|"medium"|"hard"), tags (string[]).\n\nBungkus dalam object: { "questions": [ ... ] }\n\n${prompt}`;
 
     const messages: any[] = [
       { role: "system", content: jsonSystemInstruction }

@@ -1,6 +1,6 @@
-import { authHeaders } from "./authFetch";
+import { authHeaders, apiUrl } from "./authFetch";
 
-const BASE = "/api/skills";
+const BASE = apiUrl("/api/skills");
 
 export interface Skill {
   id: string;

@@ -1,6 +1,6 @@
-import { authHeaders } from "./authFetch";
+import { authHeaders, apiUrl } from "./authFetch";
 
-const BASE = "/api/export";
+const BASE = apiUrl("/api/export");
 
 export interface ColumnMapping {
   excelColumn: string;

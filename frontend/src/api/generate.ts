@@ -1,4 +1,4 @@
-import { authHeaders } from "./authFetch";
+import { authHeaders, apiUrl } from "./authFetch";
 
 export interface GeneratedQuestion {
   id: string;
@@ -31,7 +31,7 @@ export async function startGeneration(
   prompt?: string,
   images?: { data: string; mimeType: string }[]
 ): Promise<{ jobId: string }> {
-  const res = await fetch("/api/generate", {
+  const res = await fetch(apiUrl("/api/generate"), {
     method: "POST",
     headers: { ...authHeaders(), "Content-Type": "application/json" },
     body: JSON.stringify({ skillId, count, prompt, images }),
@@ -44,7 +44,7 @@ export async function startGeneration(
 }
 
 export async function getJobStatus(jobId: string): Promise<GenerationJob> {
-  const res = await fetch(`/api/generate/${jobId}/status`, { headers: authHeaders() });
+  const res = await fetch(apiUrl(`/api/generate/${jobId}/status`), { headers: authHeaders() });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     throw new Error(err.error || "Gagal mengambil status job");

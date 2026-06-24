@@ -66,17 +66,17 @@ Bungkus dalam object: { "questions": [ ... ] }${customInstruction}
 
 ${prompt}`;
 
-    const contents: any[] = [{ role: "user", parts: [{ text: userContent }] }];
+    const parts: any[] = [{ text: userContent }];
 
     if (images && images.length > 0) {
       for (const img of images) {
-        contents[0].parts.push({
-          inlineData: { data: img.data, mimeType: img.mimeType },
-        });
+        parts.push({ inlineData: { data: img.data, mimeType: img.mimeType } });
       }
     }
 
-    const result = await model.generateContent(contents);
+    const result = await model.generateContent({
+      contents: [{ role: "user", parts }],
+    });
     const text = result.response.text();
 
     const jsonStr = extractJson(text);

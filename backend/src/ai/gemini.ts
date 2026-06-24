@@ -5,7 +5,7 @@ import type {
   ReviewResult,
 } from "./types";
 
-const GEMINI_MODEL = "gemini-2.0-flash-thinking-exp";
+const GEMINI_MODEL = "gemini-2.0-flash-exp";
 
 function extractJson(raw: string): string {
   const jsonMatch = raw.match(/\[[\s\S]*\]/) || raw.match(/\{[\s\S]*\}/);

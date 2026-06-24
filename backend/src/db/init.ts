@@ -1,13 +1,19 @@
 import { execSync } from "child_process";
+import path from "path";
 import prisma from "./index";
 import { seedDatabase } from "./seed";
 
 export async function initDatabase() {
   console.log("[DB Init] Menjalankan migrasi database otomatis...");
   try {
-    // Menjalankan 'npx prisma migrate deploy'
-    // Menggunakan npx agar kompatibel baik di Windows (pengembangan lokal) maupun Linux (Hostinger)
-    execSync("npx prisma migrate deploy", { stdio: "inherit" });
+    // Menjalankan prisma migrate deploy menggunakan path absolut ke file build/index.js prisma
+    // dan process.execPath (path ke file binary node yang sedang berjalan).
+    // Cara ini menghindari error 'npx: command not found' di Hostinger.
+    const prismaCliPath = path.resolve(process.cwd(), "node_modules/prisma/build/index.js");
+    execSync(`"${process.execPath}" "${prismaCliPath}" migrate deploy`, { 
+      stdio: "inherit",
+      env: { ...process.env, UV_THREADPOOL_SIZE: "1" }
+    });
     console.log("[DB Init] Migrasi database berhasil diselesaikan.");
   } catch (err) {
     console.error("[DB Init] Gagal menjalankan migrasi database:", err);

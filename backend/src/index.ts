@@ -11,7 +11,12 @@ import authRoutes from "./routes/auth";
 const app = express();
 const PORT = process.env.PORT || 4000;
 
-app.use(cors());
+app.use(cors({
+  origin: ["https://generator.stubia.id", "https://gen.stubia.id", "http://localhost:5173"],
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+}));
 app.use(express.json({ limit: "10mb" }));
 
 // Serve exported files

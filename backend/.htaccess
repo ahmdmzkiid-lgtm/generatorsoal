@@ -8,7 +8,23 @@
 # ============================================
 
 # ============================================
-# 1. SECURITY HEADERS
+# 1. CORS HEADERS (handle preflight OPTIONS)
+# ============================================
+<IfModule mod_headers.c>
+    Header always set Access-Control-Allow-Origin "https://generator.stubia.id"
+    Header always set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, PATCH, OPTIONS"
+    Header always set Access-Control-Allow-Headers "Content-Type, Authorization"
+    Header always set Access-Control-Allow-Credentials "true"
+    Header always set Access-Control-Max-Age "86400"
+</IfModule>
+
+# Handle OPTIONS preflight langsung di Apache
+RewriteEngine On
+RewriteCond %{REQUEST_METHOD} OPTIONS
+RewriteRule ^(.*)$ $1 [R=204,L]
+
+# ============================================
+# 2. SECURITY HEADERS
 # ============================================
 <IfModule mod_headers.c>
     Header always set X-Content-Type-Options "nosniff"

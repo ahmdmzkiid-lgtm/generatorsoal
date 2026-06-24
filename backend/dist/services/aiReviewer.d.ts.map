@@ -1,0 +1,1 @@
+{"version":3,"file":"aiReviewer.d.ts","sourceRoot":"","sources":["../../src/services/aiReviewer.ts"],"names":[],"mappings":"AA0CA,MAAM,WAAW,YAAY;IAC3B,UAAU,EAAE,MAAM,CAAC;IACnB,KAAK,EAAE,OAAO,CAAC;IACf,MAAM,EAAE,MAAM,EAAE,CAAC;IACjB,UAAU,EAAE,MAAM,CAAC;IACnB,SAAS,EAAE,kBAAkB,GAAG,eAAe,CAAC;CACjD;AAED,wBAAsB,cAAc,CAAC,UAAU,EAAE,MAAM,GAAG,OAAO,CAAC,YAAY,CAAC,CAwE9E"}

@@ -7,6 +7,7 @@ import generateRoutes from "./routes/generate";
 import questionRoutes from "./routes/questions";
 import exportRoutes from "./routes/export";
 import authRoutes from "./routes/auth";
+import { initDatabase } from "./db/init";
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -32,6 +33,17 @@ app.use("/api/generate", generateRoutes);
 app.use("/api/questions", questionRoutes);
 app.use("/api/export", exportRoutes);
 
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-});
+// Initialize database then start server
+initDatabase()
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`Server running on http://localhost:${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.error("Critical error during database initialization:", err);
+    // Start listening anyway so the process doesn't hang/crash Hostinger's proxy
+    app.listen(PORT, () => {
+      console.log(`Server running on http://localhost:${PORT} (Setup failed)`);
+    });
+  });

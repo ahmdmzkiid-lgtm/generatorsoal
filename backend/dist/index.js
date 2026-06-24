@@ -4,6 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 process.env.UV_THREADPOOL_SIZE = "1";
+process.env.TOKIO_WORKER_THREADS = "1";
 require("dotenv/config");
 const express_1 = __importDefault(require("express"));
 const path_1 = __importDefault(require("path"));

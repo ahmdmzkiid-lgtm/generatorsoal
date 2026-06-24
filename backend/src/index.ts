@@ -1,4 +1,5 @@
 process.env.UV_THREADPOOL_SIZE = "1";
+process.env.TOKIO_WORKER_THREADS = "1";
 import "dotenv/config";
 import express from "express";
 import path from "path";

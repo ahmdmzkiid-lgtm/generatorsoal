@@ -1,0 +1,45 @@
+{
+  "name": "generator-soal-backend",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "db:migrate": "prisma migrate dev",
+    "db:migrate:prod": "prisma migrate deploy",
+    "db:studio": "prisma studio",
+    "db:generate": "prisma generate",
+    "db:seed": "tsx prisma/seed.ts",
+    "db:reset": "prisma migrate reset --force",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "@prisma/client": "^6.5.0",
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "exceljs": "^4.4.0",
+    "express": "^4.21.2",
+    "groq-sdk": "^1.2.1",
+    "jsonwebtoken": "^9.0.3",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/cors": "^2.8.17",
+    "@types/exceljs": "^0.5.3",
+    "@types/express": "^5.0.1",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^22.14.0",
+    "prisma": "^6.5.0",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.3",
+    "vitest": "^4.1.9"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  }
+}

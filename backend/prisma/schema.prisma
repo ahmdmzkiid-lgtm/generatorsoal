@@ -1,0 +1,196 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum QuestionStatus {
+  DRAFT
+  PASSED_AI_REVIEW
+  FLAGGED_BY_AI
+  UNIQUE
+  DUPLICATE_SUSPECT
+  PUBLISHED
+  REJECTED
+  UNPUBLISHED
+
+  @@map("question_status")
+}
+
+enum GenerationJobStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+
+  @@map("generation_job_status")
+}
+
+model Skill {
+  id              String          @id @default(uuid()) @db.Uuid
+  name            String
+  version         String          @default("1.0")
+  subject         String
+  gradeLevel      String          @map("grade_level")
+  topic           String
+  systemPrompt    String          @map("system_prompt") @db.Text
+  questionFormat  Json            @map("question_format")
+  referenceContext String?        @map("reference_context") @db.Text
+  isActive        Boolean         @default(true) @map("is_active")
+  createdBy       String?         @map("created_by")
+  createdAt       DateTime        @default(now()) @map("created_at")
+  questions       Question[]
+  generationJobs  GenerationJob[]
+  versions        SkillVersion[]
+
+  @@map("skills")
+}
+
+model SkillVersion {
+  id               String   @id @default(uuid()) @db.Uuid
+  skillId          String   @map("skill_id") @db.Uuid
+  version          String
+  systemPrompt     String   @map("system_prompt") @db.Text
+  questionFormat   Json     @map("question_format")
+  referenceContext String?  @map("reference_context") @db.Text
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  skill            Skill    @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@map("skill_versions")
+}
+
+model Question {
+  id                  String              @id @default(uuid()) @db.Uuid
+  skillId             String              @map("skill_id") @db.Uuid
+  jobId               String?             @map("job_id") @db.Uuid
+  content             Json
+  questionText        String              @map("question_text") @db.Text
+  difficulty          String              @default("medium")
+  tags                String[]
+  status              QuestionStatus      @default(DRAFT)
+  generatedByModel    String?             @map("generated_by_model")
+  createdAt           DateTime            @default(now()) @map("created_at")
+  updatedAt           DateTime            @updatedAt @map("updated_at")
+
+  skill               Skill               @relation(fields: [skillId], references: [id])
+  generationJob       GenerationJob?      @relation(fields: [jobId], references: [id], onDelete: SetNull)
+  aiReviewLogs        AiReviewLog[]
+  duplicateScanLogs   DuplicateScanLog[]  @relation("PrimaryQuestion")
+  similarScanLogs     DuplicateScanLog[]  @relation("SimilarQuestion")
+  humanReviewLogs     HumanReviewLog[]
+
+  @@map("questions")
+}
+
+model GenerationJob {
+  id              String              @id @default(uuid()) @db.Uuid
+  skillId         String              @map("skill_id") @db.Uuid
+  requestedCount  Int                 @map("requested_count")
+  completedCount  Int                 @default(0) @map("completed_count")
+  status          GenerationJobStatus @default(PENDING)
+  errorMessage    String?             @map("error_message") @db.Text
+  createdBy       String?             @map("created_by")
+  createdAt       DateTime            @default(now()) @map("created_at")
+  updatedAt       DateTime            @updatedAt @map("updated_at")
+
+  skill           Skill               @relation(fields: [skillId], references: [id])
+  questions       Question[]
+
+  @@map("generation_jobs")
+}
+
+model AiReviewLog {
+  id          String   @id @default(uuid()) @db.Uuid
+  questionId  String   @map("question_id") @db.Uuid
+  valid       Boolean
+  issues      Json?
+  confidence  Decimal? @db.Decimal(5, 4)
+  modelUsed   String?  @map("model_used")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  question    Question @relation(fields: [questionId], references: [id])
+
+  @@map("ai_review_logs")
+}
+
+model DuplicateScanLog {
+  id                String   @id @default(uuid()) @db.Uuid
+  questionId        String   @map("question_id") @db.Uuid
+  similarQuestionId String   @map("similar_question_id") @db.Uuid
+  similarityScore   Decimal? @map("similarity_score") @db.Decimal(5, 4)
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  question          Question @relation("PrimaryQuestion", fields: [questionId], references: [id])
+  similarQuestion   Question @relation("SimilarQuestion", fields: [similarQuestionId], references: [id])
+
+  @@map("duplicate_scan_logs")
+}
+
+model HumanReviewLog {
+  id          String   @id @default(uuid()) @db.Uuid
+  questionId  String   @map("question_id") @db.Uuid
+  reviewerId  String?  @map("reviewer_id") @db.Uuid
+  decision    String?  @db.Text
+  reason      String?  @db.Text
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  question    Question @relation(fields: [questionId], references: [id])
+  reviewer    User?    @relation(fields: [reviewerId], references: [id])
+
+  @@map("human_review_logs")
+}
+
+model ExportTemplate {
+  id            String      @id @default(uuid()) @db.Uuid
+  name          String
+  columnMapping Json        @map("column_mapping")
+  createdBy     String?     @map("created_by")
+  createdAt     DateTime    @default(now()) @map("created_at")
+  exportLogs    ExportLog[]
+
+  @@map("export_templates")
+}
+
+model ExportLog {
+  id          String   @id @default(uuid()) @db.Uuid
+  templateId  String   @map("template_id") @db.Uuid
+  questionIds String[] @map("question_ids")
+  filePath    String   @map("file_path") @db.Text
+  createdBy   String?  @map("created_by")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  template    ExportTemplate @relation(fields: [templateId], references: [id])
+
+  @@map("export_logs")
+}
+
+model User {
+  id           String           @id @default(uuid()) @db.Uuid
+  name         String
+  email        String           @unique
+  passwordHash String           @map("password_hash")
+  role         String           @default("OPERATOR_GENERATE")
+  createdAt    DateTime         @default(now()) @map("created_at")
+
+  reviewLogs   HumanReviewLog[]
+  auditLogs    AuditLog[]
+
+  @@map("users")
+}
+
+model AuditLog {
+  id        String   @id @default(uuid()) @db.Uuid
+  actorId   String?  @map("actor_id") @db.Uuid
+  action    String
+  targetId  String?  @map("target_id")
+  metadata  Json?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  actor     User?    @relation(fields: [actorId], references: [id])
+
+  @@map("audit_logs")
+}

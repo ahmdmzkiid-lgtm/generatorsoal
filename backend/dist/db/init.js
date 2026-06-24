@@ -4,27 +4,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.initDatabase = initDatabase;
-const child_process_1 = require("child_process");
-const path_1 = __importDefault(require("path"));
 const index_1 = __importDefault(require("./index"));
 const seed_1 = require("./seed");
 async function initDatabase() {
-    console.log("[DB Init] Menjalankan migrasi database otomatis...");
-    try {
-        // Menjalankan prisma migrate deploy menggunakan path absolut ke file build/index.js prisma
-        // dan process.execPath (path ke file binary node yang sedang berjalan).
-        // Cara ini menghindari error 'npx: command not found' di Hostinger.
-        const prismaCliPath = path_1.default.resolve(process.cwd(), "node_modules/prisma/build/index.js");
-        (0, child_process_1.execSync)(`"${process.execPath}" "${prismaCliPath}" migrate deploy`, {
-            stdio: "inherit",
-            env: { ...process.env, UV_THREADPOOL_SIZE: "1" }
-        });
-        console.log("[DB Init] Migrasi database berhasil diselesaikan.");
-    }
-    catch (err) {
-        console.error("[DB Init] Gagal menjalankan migrasi database:", err);
-        // Kita tetap melanjutkan startup agar aplikasi tidak mati total jika ada masalah koneksi sementara
-    }
+    // Kita menghapus pemanggilan 'execSync' (child process) di sini untuk menghindari error EAGAIN (limit proses/thread) di Hostinger.
+    // Migrasi database (Prisma migrate) harus dijalankan dari komputer lokal Anda yang terhubung ke database cloud Neon.
     try {
         console.log("[DB Init] Memeriksa apakah database memerlukan seeding...");
         const userCount = await index_1.default.user.count();
@@ -38,7 +22,8 @@ async function initDatabase() {
         }
     }
     catch (err) {
-        console.error("[DB Init] Gagal menjalankan seeding database:", err);
+        // Menangkap error jika tabel belum dimigrasikan, agar server tidak crash
+        console.error("[DB Init] Gagal memeriksa/menjalankan seeding database. Pastikan migrasi database sudah dijalankan secara lokal:", err);
     }
 }
 //# sourceMappingURL=init.js.map
